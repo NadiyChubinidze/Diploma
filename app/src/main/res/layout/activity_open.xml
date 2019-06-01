@@ -14,13 +14,13 @@
         android:background="#ffffff">
 
         <ImageView
-            android:id="@+id/oldImage"
+            android:id="@+id/oldImageOpen"
             android:layout_width="200dp"
             android:layout_height="300dp"
-            android:src="@drawable/cat"/>
+            android:src="@drawable/dog"/>
 
         <ImageView
-            android:id="@+id/newImage"
+            android:id="@+id/newImageOpen"
             android:layout_width="200dp"
             android:layout_height="300dp"
             android:layout_marginLeft="10dp" />
@@ -46,7 +46,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Restart"
+                android:text="  Restart  "
                 android:layout_centerInParent="true"
                 android:layout_below="@+id/resultComparison"
                 android:onClick="onClick"

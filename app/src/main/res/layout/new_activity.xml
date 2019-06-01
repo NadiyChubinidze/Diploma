@@ -19,14 +19,15 @@
             android:id="@+id/oldImage"
             android:layout_width="200dp"
             android:layout_height="300dp"
-            android:src="@drawable/cat"/>
+            android:src="@drawable/dog"/>
 
         <ImageView
             android:id="@+id/newImage"
             android:layout_width="200dp"
             android:layout_height="300dp"
             android:layout_marginLeft="5dp"
-            android:src="@drawable/users_photo"/>
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/users_photo" />
 
     </LinearLayout>
 
@@ -54,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickAnalize"
-            android:text="Analize photo"
+            android:text="  Analize photo  "
             android:layout_below="@+id/buttonPhoto"
             android:layout_centerInParent="true"
             android:background="@drawable/oval_button"/>

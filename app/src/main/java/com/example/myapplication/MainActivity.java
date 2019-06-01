@@ -8,11 +8,12 @@ import android.view.View;
 import java.util.Random;
 
 
-enum Image{
-    ball,dog,cat,stop,chair
-}
 
 public class MainActivity extends AppCompatActivity {
+
+    private enum Image{
+        ball,dog,cat,stop,chair
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

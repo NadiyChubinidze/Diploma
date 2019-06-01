@@ -19,11 +19,12 @@
         <ImageButton
             android:id="@+id/dogImage"
             android:layout_width="wrap_content"
-            android:layout_height="500dp"
+            android:layout_height="600dp"
             android:scaleType="fitXY"
             android:background="@color/colorBackgroundButton"
             android:src="@drawable/dog"
-            android:onClick="onClickChoose"/>
+            android:onClick="onClickChoose"
+            />
 
         <ImageButton
             android:id="@+id/catImage"
@@ -31,6 +32,7 @@
             android:layout_height="400dp"
             android:scaleType="fitXY"
             android:src="@drawable/cat"
+            android:background="@color/colorBackgroundButton"
             android:onClick="onClickChoose"/>
         <ImageButton
             android:id="@+id/stopImage"

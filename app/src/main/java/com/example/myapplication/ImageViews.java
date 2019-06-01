@@ -29,6 +29,7 @@ public class ImageViews extends AppCompatActivity {
     private ImageView sourceImage;
     private ImageView imageView;
     private Button buttonAnalize;
+    private int srcImage;
     private Uri outputFileUri;
 
     @Override
@@ -46,8 +47,8 @@ public class ImageViews extends AppCompatActivity {
         buttonAnalize.setVisibility(View.GONE);
 
         Intent intent = getIntent();
-
-        sourceImage.setImageResource(intent.getIntExtra("image",R.drawable.cat));
+        srcImage = intent.getIntExtra("image",R.drawable.dog);
+        sourceImage.setImageResource(srcImage);
     }
 
     @Override
@@ -66,7 +67,8 @@ public class ImageViews extends AppCompatActivity {
         int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
 
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-            getThumbnailPicture();
+             getThumbnailPicture();
+
             //saveFullImage();
 
         } else {
@@ -78,14 +80,15 @@ public class ImageViews extends AppCompatActivity {
     public void onClickAnalize(View view) {
 
         ImageView oldImage = (ImageView) findViewById(R.id.oldImage);
-        ImageView newImage = (ImageView) findViewById(R.id.newImage);
 
         Intent intent = new Intent(ImageViews.this, ComparisonImage.class);
 
-        intent.putExtra("oldImage",oldImage.getId());
-        intent.putExtra("newImage",newImage.getId());
+        intent.putExtra("oldImage",srcImage);
 
         startActivity(intent);
+
+        this.finish();
+
     }
 
     @Override
