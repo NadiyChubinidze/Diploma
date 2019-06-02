@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,9 +18,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
-
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class ImageViews extends AppCompatActivity {
@@ -30,7 +35,8 @@ public class ImageViews extends AppCompatActivity {
     private ImageView imageView;
     private Button buttonAnalize;
     private int srcImage;
-    private Uri outputFileUri;
+    private File directory;
+    private String pathPhotoFirst, pathPhotoSecond;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +47,7 @@ public class ImageViews extends AppCompatActivity {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        createDirectory();
         imageView = findViewById(R.id.newImage);
         sourceImage = findViewById(R.id.oldImage);
         buttonAnalize = findViewById(R.id.buttonAnalize);
@@ -69,8 +76,6 @@ public class ImageViews extends AppCompatActivity {
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
              getThumbnailPicture();
 
-            //saveFullImage();
-
         } else {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA},
                     TAKE_PICTURE_REQUEST);
@@ -79,16 +84,13 @@ public class ImageViews extends AppCompatActivity {
 
     public void onClickAnalize(View view) {
 
-        ImageView oldImage = (ImageView) findViewById(R.id.oldImage);
-
         Intent intent = new Intent(ImageViews.this, ComparisonImage.class);
-
         intent.putExtra("oldImage",srcImage);
-
+        intent.putExtra("oldImagePath",pathPhotoSecond);
+        intent.putExtra("newImage",pathPhotoFirst);
         startActivity(intent);
 
         this.finish();
-
     }
 
     @Override
@@ -96,21 +98,51 @@ public class ImageViews extends AppCompatActivity {
 
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == TAKE_PICTURE_REQUEST && resultCode == RESULT_OK) {
-            // Проверяем, содержит ли результат маленькую картинку
             if (data != null) {
                 if (data.hasExtra("data")) {
-                    Bitmap thumbnailBitmap = data.getParcelableExtra("data");
-                    imageView.setImageBitmap(thumbnailBitmap);
+                    Bitmap bitmap=null;
+                        Object obj = data.getExtras().get("data");
+                        if (obj instanceof Bitmap) {
+                            bitmap = (Bitmap) obj;
+                            imageView.setImageBitmap(bitmap);
+                        }
 
-                }
+                        OutputStream fOut = null;
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                        String currentDateandTime = sdf.format(new Date());
+
+                        try{
+                            File file = new File(directory, "IMG_" + currentDateandTime +".jpg"); // создать уникальное имя для файла основываясь на дате сохранения
+                            pathPhotoFirst = file.getAbsolutePath();
+                            fOut = new FileOutputStream(file);
+
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // сохранять картинку в jpeg-формате с 85% сжатия.
+                            fOut.flush();
+                            fOut.close();
+                            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(),  file.getName());
+
+                            BitmapDrawable drawable = (BitmapDrawable) sourceImage.getDrawable();
+                            bitmap = drawable.getBitmap();
+
+                            file = new File(directory,  "sourceImage.jpg");
+                            pathPhotoSecond = file.getAbsolutePath();
+                            fOut = new FileOutputStream(file);
+
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // сохранять картинку в jpeg-формате с 85% сжатия.
+                            fOut.flush();
+                            fOut.close();
+                            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(),  file.getName());
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
             } else {
-                // Какие-то действия с полноценным изображением,
-                // сохраненным по адресу outputFileUri
-                imageView.setImageURI(outputFileUri);
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "Unknown error", Toast.LENGTH_SHORT);
+                toast.show();
             }
+            buttonAnalize.setVisibility(View.VISIBLE);
         }
-
-        buttonAnalize.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -133,21 +165,13 @@ public class ImageViews extends AppCompatActivity {
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             startActivityForResult(intent, TAKE_PICTURE_REQUEST);
-
-            System.out.println(Environment.DIRECTORY_PICTURES);
-
-
     }
 
-    private void saveFullImage() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = new File(Environment.getExternalStorageDirectory(),
-                "test.jpg");
+    private void createDirectory() {
+        directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Amage");
 
-        outputFileUri = Uri.fromFile(file);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-
-        startActivityForResult(intent, TAKE_PICTURE_REQUEST); //  java.lang.IllegalStateException: Could not execute method for android:onClick
+        if (!directory.exists())
+            directory.mkdirs();
     }
 
 }
