@@ -4,15 +4,28 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
+    <ImageView
+        android:id="@+id/userPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:src="@drawable/users_photo"
+        android:layout_centerHorizontal="true"/>
+
+
+        <LinearLayout
+            android:id="@+id/lineButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/userPhoto"
+            android:layout_centerInParent="true">
             <Button
-                android:id="@+id/buttonLoad"
+                android:id="@+id/buttonPhoto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="onClick"
                 android:background="@drawable/oval_button"
-                android:text="  Load random image  "
-                android:layout_centerInParent="true"
-                android:layout_above="@id/buttonChooser" />
+                android:text=" Take a photo "
+                android:layout_centerInParent="true" />
 
             <Button
                 android:id="@+id/buttonChooser"
@@ -20,9 +33,19 @@
                 android:layout_height="wrap_content"
                 android:onClick="onClick"
                 android:background="@drawable/oval_button"
-                android:text="  Choose image  "
+                android:text=" Choose image "
+                android:layout_centerInParent="true" />
+        </LinearLayout>
+
+            <Button
+                android:id="@+id/buttonFindPhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginTop="10dp"/>
+                android:layout_below="@+id/lineButton"
+                android:background="@drawable/oval_button"
+                android:text=" Find a similar image "
+                android:onClick="onClick"/>
 
 
 </RelativeLayout>

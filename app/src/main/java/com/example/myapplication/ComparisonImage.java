@@ -1,9 +1,12 @@
 package com.example.myapplication;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,10 +28,13 @@ import java.util.List;
 
 public class ComparisonImage extends AppCompatActivity {
 
-    private ImageView oldImage, newImage;
-    private String filenameObject, filenameScene;
+    private List<String> filenameSource;
+    private ImageView newImage;
+    private String filenameObject;
     private TextView result;
-
+    private String goodImage;
+    private ProgressDialog pd;
+    private Handler handler;
 
 
     @Override
@@ -36,21 +42,21 @@ public class ComparisonImage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open);
 
-        oldImage = findViewById(R.id.oldImageOpen);
+        filenameSource = MainActivity.filenames;
+
+
         newImage = findViewById(R.id.newImageOpen);
         result = findViewById(R.id.resultComparison);
+        goodImage="";
 
         Intent intent = getIntent();
-        if(intent.hasExtra("oldImage"))
-            oldImage.setImageResource(intent.getIntExtra("oldImage", R.drawable.dog));
-        if(intent.hasExtra("newImage")){
-            filenameScene = intent.getStringExtra("newImage");
-            Uri uri = Uri.parse(filenameScene);
+
+        if(intent.hasExtra("image")){
+            filenameObject = intent.getStringExtra("image");
+            Uri uri = Uri.parse(filenameObject);
             newImage.setImageURI(uri);
         }
-        if(intent.hasExtra("oldImagePath")){
-            filenameObject = intent.getStringExtra("oldImagePath");
-        }
+
 
         final boolean b = OpenCVLoader.initDebug();
 
@@ -61,66 +67,114 @@ public class ComparisonImage extends AppCompatActivity {
         } else {
         }
 
+        pd = new ProgressDialog(this);
+        pd.setTitle("Please, wait!");
+        pd.setMessage("Check image");
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        pd.setMax(filenameSource.size());
+        pd.setIndeterminate(true);
+        pd.show();
+        new Thread(myThread).start();
 
-        detectAndMatchObject();
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if(pd.getProgress()<pd.getMax())
+                    pd.incrementProgressBy(1);
+                else {
+                    pd.dismiss();
 
+                    if(goodImage.length()==0) {
+                        result.setText("Image not found");
+                        Uri uri = Uri.parse(filenameObject);
+                        newImage.setImageURI(uri);
+                    }
+                    else {
+                        result.setText("This more similar");
+                        Uri uri = Uri.parse(goodImage);
+                        newImage.setImageURI(uri);
+                    }
+                }
+            }
+        };
 
     }
+
+    private Runnable myThread = new Runnable() {
+        @Override
+        public void run() {
+                try {
+                    pd.setIndeterminate(false);
+                    detectAndMatchObject();
+
+                } catch (Throwable t) {
+                }
+        }
+    };
 
     public void detectAndMatchObject(){
 
-        Mat img1 = Imgcodecs.imread(filenameObject);
-        Mat img2 = Imgcodecs.imread(filenameScene);
+        ORB detector = ORB.create();
+        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
+        List<MatOfDMatch> knnMatches = new ArrayList<>();
+        float ratioThresh = 0.7f;
+        List<DMatch> listOfGoodMatches = new ArrayList<>();
+        int goodCount=0;
 
-        if (img1.empty() || img2.empty()) {
+        Mat img1 = Imgcodecs.imread(filenameObject);
+        if (img1.empty()){
             Toast toast = Toast.makeText(getApplicationContext(),
-                    "Error loading images", Toast.LENGTH_SHORT);
+                    "Error loading your images", Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
-
-        ORB detector = ORB.create();
         MatOfKeyPoint keypoints1 = new MatOfKeyPoint();
-        MatOfKeyPoint keypoints2 = new MatOfKeyPoint();
         Mat descriptors1 = new Mat();
+        detector.detectAndCompute(img1, new Mat(), keypoints1, descriptors1);
+        MatOfKeyPoint keypoints2 = new MatOfKeyPoint();
         Mat descriptors2 = new Mat();
 
+        for(int k=0; k<filenameSource.size();++k) {
 
-        detector.detectAndCompute(img1, new Mat(), keypoints1, descriptors1);
-        detector.detectAndCompute(img2, new Mat(), keypoints2, descriptors2);
+            handler.sendMessage(handler.obtainMessage());
 
-        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
-        List<MatOfDMatch> knnMatches = new ArrayList<>();
 
-        System.err.println(matcher);
-        matcher.knnMatch(descriptors1, descriptors2, knnMatches,2);
+            if(filenameSource.get(k).equals(filenameObject))
+                continue;
 
-        float ratioThresh = 0.7f;
-        List<DMatch> listOfGoodMatches = new ArrayList<>();
-        for (int i = 0; i < knnMatches.size(); i++) {
-            if (knnMatches.get(i).rows() > 1) {
-                DMatch[] matches = knnMatches.get(i).toArray();
-                if (matches[0].distance < ratioThresh * matches[1].distance) {
-                    listOfGoodMatches.add(matches[0]);
+            Mat img2 = Imgcodecs.imread(filenameSource.get(k));
+
+            if (img2.empty()) {
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "Error loading images", Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+
+            detector.detectAndCompute(img2, new Mat(), keypoints2, descriptors2);
+            matcher.knnMatch(descriptors1, descriptors2, knnMatches, 2);
+
+            for (int i = 0; i < knnMatches.size(); i++) {
+                if (knnMatches.get(i).rows() > 1) {
+                    DMatch[] matches = knnMatches.get(i).toArray();
+                    if (matches[0].distance < ratioThresh * matches[1].distance) {
+                        listOfGoodMatches.add(matches[0]);
+                    }
                 }
             }
+            if(listOfGoodMatches.size()!=0 && listOfGoodMatches.size()>goodCount){
+                goodImage = filenameSource.get(k);
+                goodCount = listOfGoodMatches.size();
+            }
+            listOfGoodMatches.clear();
+            knnMatches.clear();
+
         }
 
+        if(goodCount<10)
+            goodImage="";
 
-        if(listOfGoodMatches.size()<=10)
-            result.setText("Nope");
-        else
-            result.setText("Yeap");
-
-
-    }
-
-
-    public void onClick(View view) {
-
-            Intent intent = new Intent(ComparisonImage.this, MainActivity.class);
-            startActivity(intent);
-            this.finish();
     }
 
 

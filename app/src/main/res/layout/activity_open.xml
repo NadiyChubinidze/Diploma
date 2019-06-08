@@ -6,35 +6,20 @@
     android:orientation="vertical"
     android:background="@color/colorBackground">
 
-    <LinearLayout
-        android:id="@+id/imagesOpen"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:orientation="horizontal"
-        android:background="#ffffff">
 
-        <ImageView
-            android:id="@+id/oldImageOpen"
-            android:layout_width="200dp"
-            android:layout_height="300dp"
-            android:src="@drawable/dog"/>
 
         <ImageView
             android:id="@+id/newImageOpen"
-            android:layout_width="200dp"
-            android:layout_height="300dp"
-            android:layout_marginLeft="10dp" />
-
-    </LinearLayout>
-
-
-        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/imagesOpen">
+            android:layout_height="400dp"
+            android:layout_centerHorizontal="true" />
+
+
+
 
             <TextView
                 android:id="@+id/resultComparison"
+                android:layout_below="@id/newImageOpen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
@@ -42,16 +27,6 @@
                 android:layout_centerInParent="true"
                 android:textColor="@color/colorPrimary"/>
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="  Restart  "
-                android:layout_centerInParent="true"
-                android:layout_below="@+id/resultComparison"
-                android:onClick="onClick"
-                android:background="@drawable/oval_button"/>
-
-        </RelativeLayout>
 
 
 </RelativeLayout>
