@@ -175,7 +175,10 @@ public class ComparisonImage extends AppCompatActivity {
         if(goodCount<10)
             goodImage="";
 
+        handler.sendMessage(handler.obtainMessage());
+
     }
+
 
 
 }

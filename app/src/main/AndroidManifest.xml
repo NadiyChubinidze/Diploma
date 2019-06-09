@@ -32,12 +32,6 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ChooserPhoto">
-
-        </activity>
-        <activity android:name=".ImageViews">
-
-        </activity>
         <activity android:name=".ComparisonImage">
 
         </activity>
